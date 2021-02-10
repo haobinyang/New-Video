@@ -19,7 +19,7 @@ export default {
 
 <style scoped>
 .container {
-  height: calc(100vh - 450px);
+  /* height: calc(100vh - 450px); */
   display: flex;
   flex-grow: 1;
   justify-content: center;
