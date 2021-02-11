@@ -21,7 +21,9 @@ export class Image extends Element {
     } = this;
     const { uniforms, fragment } = effects(effect);
     this.originEffect = effect;
+    // eslint-disable-next-line no-undef
     this.geometry = new THREE.PlaneGeometry(width, height);
+    // eslint-disable-next-line no-undef
     this.material = new THREE.ShaderMaterial({
       uniforms: {
         tex: { value: texture },
@@ -37,6 +39,7 @@ export class Image extends Element {
       uniformsNeedUpdate: true
     });
     this.material.transparent = true;
+    // eslint-disable-next-line no-undef
     this.sprite = new THREE.Mesh(this.geometry, this.material);
   }
 

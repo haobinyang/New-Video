@@ -1,7 +1,8 @@
 <template>
   <div class="container">
     <div class="inner-container">
-      <div :style="{ width: scrollWidth + 'px' }" class="scroll-area">
+      <div :style="{ width: scrollWidth + 'px' }" class="scroll-area" @click.capture="timeLineClick">
+        <anchor :currentTime="currentTime"/>
         <div class="time-rule">
           <div v-for="(item, index) in Array(duration)"
             :key="index"
@@ -16,8 +17,9 @@
           >
             <div v-for="subItem in item" 
               :key="subItem.id" 
-              class="element"
+              :class="['element', activeId === subItem.id ? 'active' : '']"
               :style="getElementStyle(subItem)"
+              @click="elementClick(subItem.id)"
             >
               {{subItem.name}}
             </div>
@@ -31,9 +33,11 @@
 <script>
 import { EventBus } from '../../utils/event-bus';
 import { WidthPerSecond, DRAG_STATUS } from '../../constants/common';
-import { geneElementInfo } from '../../utils/common';
+import { geneElementInfo, getDuration } from '../../utils/common';
+import Anchor from './Anchor';
 
 export default {
+  components: { Anchor },
   data() {
     return {
       list: [[]], // 实际存储的数据
@@ -42,7 +46,11 @@ export default {
 
       // 放置位置
       offsetX: 0,
-      offsetY: 0
+      offsetY: 0,
+
+      currentTime: 0,
+
+      activeId: ''
     };
   },
   computed: {
@@ -81,6 +89,7 @@ export default {
       } else {
         item.push(element);
       }
+      EventBus.$emit('addElement', list, element);
     },
     dropZoneMouseOver(e) {
       const { offsetX, offsetY } = e;
@@ -93,6 +102,17 @@ export default {
         left: `${startTime / 1000 * WidthPerSecond}px`, 
         width: `${(endTime - startTime) / 1000 * WidthPerSecond}px`
       }
+    },
+    timeLineClick(e) {
+      const rect = e.currentTarget.getBoundingClientRect(),
+        offsetX = e.clientX - rect.left;
+      const currentTime = (offsetX - 18) / WidthPerSecond * 1000;
+      const duration = getDuration(this.list);
+      this.currentTime = Math.min(Math.max(0, currentTime), duration);
+      EventBus.$emit('setCurrentTimeToPlayer', this.currentTime);
+    },
+    elementClick(id) {
+      this.activeId = id;
     }
   },
   mounted() {
@@ -114,6 +134,9 @@ export default {
         this.status = DRAG_STATUS.UNKNOWN;
         this.overIndex = -1;
       }, 0);
+    });
+    EventBus.$on('setCurrentTimeToTimeLine', (currentTime) => {
+      this.currentTime = currentTime;
     });
   }
 }
@@ -217,6 +240,7 @@ export default {
   cursor: default;
   width: 10px;
   text-overflow: ellipsis;
+  box-sizing: border-box;
 }
 .drop-zone .element:hover {
   background-color: rgb(141, 127, 246);

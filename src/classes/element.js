@@ -7,6 +7,10 @@ export class Element {
     this.isStart = false;
   }
 
+  updateZIndex(zIndex) {
+    this.zIndex = zIndex;
+  }
+
   onCurrentTimeChange(isManual) {
   }
 

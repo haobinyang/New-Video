@@ -73,3 +73,32 @@ export async function geneElementInfo(data, offsetInDragElement, offsetInDropZon
     ...elementData
   };
 }
+
+export function timeLineElementsToPlayerElements(elements) {
+  return elements.filter((element) => {
+    return element.length > 0;
+  }).flat();
+}
+
+export function getElementZIndex(elements, element) {
+  const filterElements = elements.filter((element) => {
+    return element.length > 0;
+  });
+  for (let i = 0; i < filterElements.length; i++) {
+    if (filterElements[i].indexOf(element) > -1) {
+      return i;
+    }
+  }
+  return 0;
+}
+
+export function getDuration(elements) {
+  const playerElements = timeLineElementsToPlayerElements(elements);
+  let duration = 0;
+  playerElements.forEach(({ endTime }) => {
+    if (endTime > duration) {
+      duration = endTime;
+    }
+  });
+  return duration;
+}

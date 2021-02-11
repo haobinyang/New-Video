@@ -39,7 +39,9 @@ export class Transition extends Element {
     const { uniforms: fromUniforms, fragment: fromFragment } = effects(fromEffect);
     const { uniforms: toUniforms, fragment: toFragment } = effects(toEffect);
     const { uniforms: transitionUniforms, fragment: transitionFragment } = transitions(transition);
+    // eslint-disable-next-line no-undef
     this.geometry = new THREE.PlaneGeometry(width, height);
+    // eslint-disable-next-line no-undef
     this.material = new THREE.ShaderMaterial({
       uniforms: {
         from: { value: fromTexture },
@@ -63,6 +65,7 @@ export class Transition extends Element {
       uniformsNeedUpdate: true
     });
     this.material.transparent = true;
+    // eslint-disable-next-line no-undef
     this.sprite = new THREE.Mesh(this.geometry, this.material);
   }
 

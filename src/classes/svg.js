@@ -18,10 +18,14 @@ export class Svg extends Element {
 
   initRender() {
     const { player: { width, height } } = this;
+    // eslint-disable-next-line no-undef
     this.geometry = new THREE.PlaneGeometry(width, height);
+    // eslint-disable-next-line no-undef
     this.material = new THREE.MeshBasicMaterial();
+    // eslint-disable-next-line no-undef
     this.material.map = new THREE.CanvasTexture(this.canvas);
     this.material.transparent = true;
+    // eslint-disable-next-line no-undef
     this.sprite = new THREE.Mesh(this.geometry, this.material);
   }
 

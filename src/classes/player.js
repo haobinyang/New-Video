@@ -43,17 +43,27 @@ export default class Player {
   tickFun;
 
   onCurrentTimeChange;
+  onEnd;
 
-  constructor({ elements, width, height, onCurrentTimeChange }) {
+  constructor({ elements, width, height, onCurrentTimeChange, onEnd }) {
     this.width = width;
     this.height = height;
     this.painter = new Painter(width, height);
     this.tickFun = this.tick.bind(this);
     this.elements = (elements || []).map((element) => {
-      this.duration = Math.max(this.duration, element.endTime);
       return createElement(element, this);
     });
+    this.updateDuration();
     this.onCurrentTimeChange = onCurrentTimeChange;
+    this.onEnd = onEnd;
+  }
+
+  updateDuration() {
+    this.elements.forEach(({ endTime }) => {
+      if (endTime > this.duration) {
+        this.duration = endTime;
+      }
+    });
   }
 
   isInRange(element) {
@@ -67,12 +77,19 @@ export default class Player {
 
   addElement(element) {
     this.elements.push(createElement(element, this));
+    this.updateDuration();
   }
 
   removeElement(id) {
     const element = this.getElementById(id);
     element.removeFromPainter();
     this.elements.splice(this.elements.indexOf(element), 1);
+    this.updateDuration();
+  }
+
+  updateZIndex(id, zIndex) {
+    const element = this.getElementById(id);
+    element.updateZIndex(zIndex);
   }
 
   play() {
@@ -80,17 +97,23 @@ export default class Player {
       this.playing = true;
       this.req = requestAnimationFrame(this.tickFun);
     }
-    // this.renderFrame(false);
+    this.renderFrame(false);
+    this.tickTime = performance.now();
   }
 
   tick(time) {
-    if (this.tickTime !== -1) {
-      const interval = Math.ceil(time - this.tickTime);
+    const interval = Math.ceil(time - this.tickTime);
+    if (this.currentTime + interval >= this.duration) {
+      this.currentTime = this.duration;
+      this.renderFrame(false);
+      this.pause();
+      this.onEnd?.();
+    } else {
       this.currentTime += interval;
       this.renderFrame(false);
+      this.tickTime = time;
+      this.tickReq = requestAnimationFrame(this.tickFun);
     }
-    this.tickTime = time;
-    this.tickReq = requestAnimationFrame(this.tickFun);
   }
 
   pause() {
@@ -120,6 +143,10 @@ export default class Player {
       await elements[i].onCurrentTimeChange(isManual);
     }
     this.painter.render();
-    this.onCurrentTimeChange(this.currentTime);
+    this.onCurrentTimeChange?.(this.currentTime);
+  }
+
+  attachTo(element) {
+    element.appendChild(this.painter.getDomElement());
   }
 }
