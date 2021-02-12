@@ -78,6 +78,8 @@ export default class Player {
   addElement(element) {
     this.elements.push(createElement(element, this));
     this.updateDuration();
+    this.pause();
+    this.renderFrame(true);
   }
 
   removeElement(id) {
@@ -85,6 +87,8 @@ export default class Player {
     element.removeFromPainter();
     this.elements.splice(this.elements.indexOf(element), 1);
     this.updateDuration();
+    this.pause();
+    this.renderFrame(true);
   }
 
   updateZIndex(id, zIndex) {
@@ -144,6 +148,11 @@ export default class Player {
     }
     this.painter.render();
     this.onCurrentTimeChange?.(this.currentTime);
+  }
+
+  destroy() {
+    this.elements.length = 0;
+    this.elements = [];
   }
 
   attachTo(element) {

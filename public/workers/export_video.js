@@ -5,7 +5,7 @@ onmessage = function(e) {
 
   ffmpeg({
     arguments: ['-threads', '1', '-y', '-nostdin', '-r', `${fps}`, '-i', `export_%04d.jpg`,
-     '-c:v', 'h264', '-vf', `fps=${fps}`, '-pix_fmt', 'yuv420p', fileName],
+     '-c:v', 'libx264', '-crf', '1', '-profile:v', 'high', '-vf', 'scale=614:-2:flags=lanczos:eval=frame', '-pix_fmt', 'yuv420p', '-preset', 'ultrafast', fileName],
     preRun(module, fs) {
       for (let i = 0; i < frames.length; i++) {
         fs.writeFile(`export_${i.toString().padStart(4, '0')}.jpg`, new Uint8Array(frames[i]));

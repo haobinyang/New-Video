@@ -5,7 +5,7 @@
       <div class="toolbar-container">
         <div class="toolbar">
           <div class="left"></div>
-          <button class="export-button">
+          <button class="export-button" @click="exportClick">
             导出
           </button>
         </div>
@@ -24,13 +24,25 @@ import SideMenu from './SideMenu';
 import Player from './Player';
 import TimeLine from './TimeLine';
 import Assets from './Assets';
+import { EventBus } from '../../utils/event-bus';
 
 export default {
   components: {
     SideMenu, Player, TimeLine, Assets
+  },
+  methods: {
+    exportClick() {
+      EventBus.$emit('exportVideo');
+    }
   }
 }
 </script>
+
+<style>
+body {
+  overscroll-behavior-x: none;
+}
+</style>
 
 <style scoped>
 .editor {

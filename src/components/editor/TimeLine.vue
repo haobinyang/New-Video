@@ -50,7 +50,7 @@ export default {
 
       currentTime: 0,
 
-      activeId: ''
+      activeId: null
     };
   },
   computed: {
@@ -89,7 +89,23 @@ export default {
       } else {
         item.push(element);
       }
+      this.activeId = element.id;
       EventBus.$emit('addElement', list, element);
+    },
+    remove() {
+      const { list } = this;
+      for (let i = 0; i < list.length; i++) {
+        const elements = list[i];
+        for (let j = 0; j < elements.length; j++) {
+          const element = elements[j];
+          if (element.id === this.activeId) {
+            elements.splice(j, 1);
+            if (!elements.length && list.length !== 1) {
+              list.splice(i, 2);
+            }
+          }
+        }
+      }
     },
     dropZoneMouseOver(e) {
       const { offsetX, offsetY } = e;
@@ -137,6 +153,12 @@ export default {
     });
     EventBus.$on('setCurrentTimeToTimeLine', (currentTime) => {
       this.currentTime = currentTime;
+    });
+    document.addEventListener('keyup', (e) => {
+      if (e.key === 'Backspace' && this.activeId) {
+        EventBus.$emit('removeElement', this.activeId);
+        this.remove();
+      }
     });
   }
 }

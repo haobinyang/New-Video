@@ -94,7 +94,7 @@ async function getImageData(canvas) {
  */
 export async function exportAsVideo(player, fileName = 'export.mp4', fps = 30) {
   const interval = 1000 / fps;
-  const frames = [];
+  let frames = [];
   let currentTime = 0;
   while (currentTime < player.duration) {
     player.setCurrentTime(currentTime);
@@ -114,38 +114,32 @@ export async function exportAsVideo(player, fileName = 'export.mp4', fps = 30) {
     // 清空数据
     frames.length = 0;
     frames = [];
-    $('#video').src = URL.createObjectURL(e.data);
+    downloadFile(URL.createObjectURL(e.data), fileName);
   }
 }
 
 /* Helper function */
-// function download_file(fileURL, fileName) {
-//   // for non-IE
-//   if (!window.ActiveXObject) {
-//       var save = document.createElement('a');
-//       save.href = fileURL;
-//       save.target = '_blank';
-//       var filename = fileURL.substring(fileURL.lastIndexOf('/')+1);
-//       save.download = fileName || filename;
-//        if ( navigator.userAgent.toLowerCase().match(/(ipad|iphone|safari)/) && navigator.userAgent.search("Chrome") < 0) {
-//       document.location = save.href; 
-// // window event not working here
-//     }else{
-//           var evt = new MouseEvent('click', {
-//               'view': window,
-//               'bubbles': true,
-//               'cancelable': false
-//           });
-//           save.dispatchEvent(evt);
-//           (window.URL || window.webkitURL).revokeObjectURL(save.href);
-//     }	
-//   }
-
-//   // for IE < 11
-//   else if ( !! window.ActiveXObject && document.execCommand)     {
-//       var _window = window.open(fileURL, '_blank');
-//       _window.document.close();
-//       _window.document.execCommand('SaveAs', true, fileName || fileURL)
-//       _window.close();
-//   }
-// }
+function downloadFile(fileURL, fileName) {
+  if (!window.ActiveXObject) { // for non-IE
+    const save = document.createElement('a');
+    save.href = fileURL;
+    save.target = '_blank';
+    save.download = fileName;
+    if (navigator.userAgent.toLowerCase().match(/(ipad|iphone|safari)/) && navigator.userAgent.search("Chrome") < 0) {
+      document.location = save.href;
+    } else { // window event not working here
+      const evt = new MouseEvent('click', {
+        'view': window,
+        'bubbles': true,
+        'cancelable': false
+      });
+      save.dispatchEvent(evt);
+      (window.URL || window.webkitURL).revokeObjectURL(save.href);
+    }	
+  } else if ( !! window.ActiveXObject && document.execCommand) { // for IE < 11
+    const newWindow = window.open(fileURL, '_blank');
+    newWindow.document.close();
+    newWindow.document.execCommand('SaveAs', true, fileName || fileURL);
+    newWindow.close();
+  }
+}

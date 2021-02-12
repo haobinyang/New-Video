@@ -9,19 +9,22 @@
         </div>
       </div>
     </div>
+    <export-dialog v-if="exporting" :player="player" />
   </div>
 </template>
 
 <script>
 import Player from '../../classes/player.js';
-import { getElementZIndex } from '../../utils/common.js';
 import { EventBus } from '../../utils/event-bus.js';
+import ExportDialog from './Export'
 
 export default {
+  components: { ExportDialog },
   data() {
     return {
       player: null,
-      isPlaying: false
+      isPlaying: false,
+      exporting: false
     };
   },
   mounted() {
@@ -53,13 +56,19 @@ export default {
     EventBus.$on('setCurrentTimeToPlayer', (currentTime) => {
       this.player.setCurrentTime(currentTime);
     });
+    EventBus.$on('exportVideo', () => {
+      this.exporting = true;
+    });
+    EventBus.$on('exportClose', () => {
+      this.exporting = false;
+    });
   },
   methods: {
     add(element) {
       this.player.addElement(element);
     },
     remove(id) {
-
+      this.player.removeElement(id);
     },
     update(element) {
 

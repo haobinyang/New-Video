@@ -80,18 +80,6 @@ export function timeLineElementsToPlayerElements(elements) {
   }).flat();
 }
 
-export function getElementZIndex(elements, element) {
-  const filterElements = elements.filter((element) => {
-    return element.length > 0;
-  });
-  for (let i = 0; i < filterElements.length; i++) {
-    if (filterElements[i].indexOf(element) > -1) {
-      return i;
-    }
-  }
-  return 0;
-}
-
 export function getDuration(elements) {
   const playerElements = timeLineElementsToPlayerElements(elements);
   let duration = 0;
