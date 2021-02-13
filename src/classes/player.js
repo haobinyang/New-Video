@@ -79,7 +79,6 @@ export default class Player {
     this.elements.push(createElement(element, this));
     this.updateDuration();
     this.pause();
-    this.renderFrame(true);
   }
 
   removeElement(id) {
@@ -88,12 +87,17 @@ export default class Player {
     this.elements.splice(this.elements.indexOf(element), 1);
     this.updateDuration();
     this.pause();
-    this.renderFrame(true);
   }
 
   updateZIndex(id, zIndex) {
     const element = this.getElementById(id);
     element.updateZIndex(zIndex);
+  }
+
+  updateTimes(id, startTime, endTime) {
+    const element = this.getElementById(id);
+    element.startTime = startTime;
+    element.endTime = endTime;
   }
 
   play() {

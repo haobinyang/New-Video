@@ -33,7 +33,7 @@
 <script>
 import { EventBus } from '../../utils/event-bus';
 import { WidthPerSecond, DRAG_STATUS } from '../../constants/common';
-import { geneElementInfo, getDuration } from '../../utils/common';
+import { geneElementInfo, getDuration, solveTimeConfict, getInsertIndex } from '../../utils/common';
 import Anchor from './Anchor';
 
 export default {
@@ -87,7 +87,9 @@ export default {
       if (!item.length) {
         list.splice(overIndex, 1, [], [element], []);
       } else {
-        item.push(element);
+        const insertIndex = getInsertIndex(item, x);
+        item.splice(insertIndex, 0, element);
+        solveTimeConfict(item);
       }
       this.activeId = element.id;
       EventBus.$emit('addElement', list, element);

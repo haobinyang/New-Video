@@ -79,11 +79,30 @@ export function sleep(ms) {
   });
 }
 
+function drawImageToCanvas(canvas, ctx, image) {
+  const { width, height } = canvas;
+  return new Promise((resolve) => {
+    // const img = new Image();
+    // img.onload = function() {
+      // debugger
+      // ctx.clearRect( 0, 0, width, height );
+      // ctx.scale(1, 1);
+      ctx.drawImage(image, 0, 0, width * 2, height * 2, 0, 0, width, height);
+      // ctx.scale(0.5, 0.5);
+      canvas.toBlob(async (blob) => {
+        const arrayBuffer = await blob.arrayBuffer();
+        resolve(arrayBuffer);
+      }, 'image/jpeg', 1.0);
+    // };
+    // img.src = image; //URL.createObjectURL(image);
+  });
+}
+
 async function getImageData(canvas) {
   return new Promise((resolve) => {
     canvas.toBlob(async (blob) => {
-      const arrayBuffer = await blob.arrayBuffer();
-      resolve(arrayBuffer);
+      // const arrayBuffer = await blob.arrayBuffer();
+      resolve(blob);
     }, 'image/jpeg', 1.0);
   });
 }
@@ -96,26 +115,32 @@ export async function exportAsVideo(player, fileName = 'export.mp4', fps = 30) {
   const interval = 1000 / fps;
   let frames = [];
   let currentTime = 0;
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+  // ctx.mozImageSmoothingEnabled = false;
+  // ctx.imageSmoothingEnabled = false;
+  // ctx.scale(0.5, 0.5);
   while (currentTime < player.duration) {
     player.setCurrentTime(currentTime);
-    const imageData = await getImageData(player.painter.getDomElement());
+    // const imageData1 = await getImageData(player.painter.getDomElement());
+    const imageData = await drawImageToCanvas(canvas, ctx, player.painter.getDomElement());
     frames.push(imageData);
     await sleep(interval);
     currentTime += interval;
   }
-  player.setCurrentTime(player.duration);
-  const imageData = await getImageData(player.painter.getDomElement());
-  frames.push(imageData);
+  // player.setCurrentTime(player.duration);
+  // const imageData = await getImageData(player.painter.getDomElement());
+  // frames.push(imageData);
 
   // 调用ffmpeg生成视频文件
-  const worker = new Worker('./workers/export_video.js');
-  worker.postMessage({ frames, fileName, fps });
-  worker.onmessage = function(e) {
-    // 清空数据
-    frames.length = 0;
-    frames = [];
-    downloadFile(URL.createObjectURL(e.data), fileName);
-  }
+  // const worker = new Worker('./workers/export_video.js');
+  // worker.postMessage({ frames, fileName, fps });
+  // worker.onmessage = function(e) {
+  //   // 清空数据
+  //   frames.length = 0;
+  //   frames = [];
+  //   downloadFile(URL.createObjectURL(e.data), fileName);
+  // }
 }
 
 /* Helper function */

@@ -74,6 +74,48 @@ export async function geneElementInfo(data, offsetInDragElement, offsetInDropZon
   };
 }
 
+export function xToTime(x) {
+  return x / WidthPerSecond * 1000;
+}
+
+export function getInsertIndex(elements, x) {
+  const time = xToTime(x);
+  if (time <= elements[0].startTime) {
+    return 0;
+  }
+  for (let i = 1; i < elements.length - 1; i++) {
+    if (time > elements[i].endTime && time < elements[i + 1].startTime) {
+      return i + 1;
+    }
+  }
+  if (time >= elements[elements.length - 1].endTime) {
+    return elements.length;
+  }
+}
+
+export function isIntersect(element1, element2) {
+  const { startTime: s1, endTime: e1 } = element1;
+  const { startTime: s2, endTime: e2 } = element2;
+  if (s1 > s2) { // s2在s1左边
+    return (e1 - s2) < (e1 - s1 + e2 - s2);
+  } else {
+    return (e2 - s1) < (e1 - s1 + e2 - s2);
+  }
+}
+
+// 
+export function solveTimeConfict(elements) {
+  const len = elements.length;
+  for (let i = 0; i < len - 1; i++) {
+    const e1 = elements[i];
+    const e2 = elements[i + 1];
+    if (isIntersect(e1, e2)) {
+      e2.startTime = e1.endTime;
+      e2.endTime = e2.startTime + e2.duration;
+    }
+  }
+}
+
 export function timeLineElementsToPlayerElements(elements) {
   return elements.filter((element) => {
     return element.length > 0;

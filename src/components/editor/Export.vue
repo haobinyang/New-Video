@@ -2,6 +2,9 @@
   <div class="container">
     <div @click="close" class="close-btn">关闭</div>
     <div class="player" ref="videoContainer"></div>
+    <div style="position: absolute; left: 0; top: 0; z-index: 99;">
+      <canvas id="canvas" width="614" height="345" style="width: 614px; height: 345px;"/>
+    </div>
     <div class="tip">视频导出中...<br />根据视频的长度，导出时间可能需要几分钟或更长</div>
   </div>
 </template>

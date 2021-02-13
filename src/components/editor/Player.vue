@@ -45,13 +45,12 @@ export default {
 
     EventBus.$on('addElement', (elements, element) => {
       this.add(element);
-      this.updateZIndex(elements);
+      this.update(elements);
+      this.player.renderFrame(true);
     });
     EventBus.$on('removeElement', (id) => {
       this.remove(id);
-    });
-    EventBus.$on('updateElement', (element, index) => {
-      this.update(element, index);
+      this.player.renderFrame(true);
     });
     EventBus.$on('setCurrentTimeToPlayer', (currentTime) => {
       this.player.setCurrentTime(currentTime);
@@ -70,15 +69,13 @@ export default {
     remove(id) {
       this.player.removeElement(id);
     },
-    update(element) {
-
-    },
-    updateZIndex(elements) {
+    update(elements) {
       elements.filter((element) => {
         return element.length > 0;
       }).forEach((elements, index) => {
-        elements.forEach(({ id }) => {
+        elements.forEach(({ id, startTime, endTime }) => {
           this.player.updateZIndex(id, index);
+          this.player.updateTimes(id, startTime, endTime);
         });
       });
     },

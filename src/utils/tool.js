@@ -9,11 +9,11 @@ export class CustomError {
   }
 }
 
-export async function loadVideo(file) {
+export async function loadVideo(arrayBuffer) {
   try {
     return new Promise((resolve) => {
       const video = document.createElement('video');
-      video.src = URL.createObjectURL(file);
+      video.src = URL.createObjectURL(new Blob([arrayBuffer], { type: 'video/mp4' }));
       video.loop = false;
       // 可播放的时候再resolve
       video.addEventListener('loadeddata', async () => {

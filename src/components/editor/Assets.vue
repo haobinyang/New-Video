@@ -57,10 +57,17 @@ export default {
   methods: {
     async inputFile(file) {
       if (file) {
+        const type = file.type.indexOf('image') > -1 ? ElementType.IMAGE : ElementType.VIDEO;
+        let value;
+        if (type === ElementType.VIDEO) {
+          value = await file.file.arrayBuffer();
+        } else {
+          value = file.file;
+        }
         this.assets.media.push({
           name: file.name,
-          value: file.file,
-          type: file.type.indexOf('image') > -1 ? ElementType.IMAGE : ElementType.VIDEO
+          value: value,
+          type: type
         });
         this.currentTab = 'media';
         EventBus.$emit('changeTab2Media', 'media');
