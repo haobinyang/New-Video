@@ -783,7 +783,7 @@ function ffmpeg(customModule) {
             return asm[name].apply(null, arguments)
         }
     }
-    var wasmBinaryFile = "../libs/ffmpeg.wasm";
+    var wasmBinaryFile = "/dist/libs/ffmpeg.wasm";
     if (!isDataURI(wasmBinaryFile)) {
         wasmBinaryFile = locateFile(wasmBinaryFile)
     }
