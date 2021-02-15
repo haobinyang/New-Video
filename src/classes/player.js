@@ -83,7 +83,6 @@ export default class Player {
   }
 
   removeElement(id) {
-    debugger
     const element = this.getElementById(id);
     element.removeFromPainter();
     this.elements.splice(this.elements.indexOf(element), 1);
@@ -113,25 +112,25 @@ export default class Player {
     element.endTime = endTime;
   }
 
-  play() {
+  async play() {
     if (!this.playing) {
       this.playing = true;
-      this.req = requestAnimationFrame(this.tickFun);
+      this.tickReq = requestAnimationFrame(this.tickFun);
     }
-    this.renderFrame(false);
+    await this.renderFrame(false);
     this.tickTime = performance.now();
   }
 
-  tick(time) {
+  async tick(time) {
     const interval = Math.ceil(time - this.tickTime);
     if (this.currentTime + interval >= this.duration) {
       this.currentTime = this.duration;
-      this.renderFrame(false);
+      await this.renderFrame(false);
       this.pause();
       this.onEnd?.();
     } else {
       this.currentTime += interval;
-      this.renderFrame(false);
+      await this.renderFrame(false);
       this.tickTime = time;
       this.tickReq = requestAnimationFrame(this.tickFun);
     }

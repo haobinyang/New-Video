@@ -233,7 +233,7 @@ export default {
         this.add(data, position);
         this.status = DRAG_STATUS.UNKNOWN;
         this.overIndex = -1;
-      }, 0);
+      }, 100);
     });
 
     // transition 
@@ -251,7 +251,7 @@ export default {
       window.setTimeout(() => {
         this.addTransition(data);
         this.status = DRAG_STATUS.UNKNOWN;
-      }, 0);
+      }, 100);
     });
 
     EventBus.$on('setCurrentTimeToTimeLine', (currentTime) => {

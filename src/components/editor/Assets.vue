@@ -3,7 +3,7 @@
     <template v-if="currentTab === 'add'">
       <file-upload accept="video/*, image/png, image/jpeg, image/jpg" @input-file="inputFile">
         <div v-if="isTranscode" class="transcode-tip">
-          转码中，请稍后...
+          转码中，请稍候...
         </div>
       </file-upload>
     </template>
