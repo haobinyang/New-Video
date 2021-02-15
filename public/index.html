@@ -6,13 +6,43 @@
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
     <link rel="icon" href="<%= BASE_URL %>favicon.ico">
     <title><%= htmlWebpackPlugin.options.title %></title>
+    <style>
+      .loading {
+        position: fixed;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        z-index: 999;
+        background-color: #1c1d26;
+      }
+      .loading div {
+        color: white;
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+      }
+    </style>
   </head>
   <body>
     <noscript>
       <strong>We're sorry but <%= htmlWebpackPlugin.options.title %> doesn't work properly without JavaScript enabled. Please enable it to continue.</strong>
     </noscript>
     <div id="app"></div>
+    <div class="loading">
+      <div>资源加载中...</div>
+    </div>
     <!-- built files will be auto injected -->
     <script src="libs/three.js"></script>
+    <script src="libs/ffmpeg.js"></script>
+    <script>
+      ffmpeg({
+        arguments: ['-codecs'],
+        onExit() {
+          document.querySelector('.loading').style.display = 'none';
+        }
+      });
+    </script>
   </body>
 </html>

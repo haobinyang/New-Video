@@ -147,3 +147,13 @@ export function getDuration(elements) {
   });
   return duration;
 }
+
+export function msToTime(ms) {
+  const leftMs = ms % 1000;
+  const s = Math.floor(ms / 1000);
+  const leftS = s % 60;
+  const m = Math.floor(s / 60);
+  const leftM = m % 60;
+  const h = Math.floor(m / 60);
+  return `${h.toString().padStart(2, '0')}:${leftM.toString().padStart(2, '0')}:${leftS.toString().padStart(2, '0')}.${leftMs.toString().padStart(3, '0')}`;
+}
