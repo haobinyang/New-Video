@@ -4,8 +4,23 @@ onmessage = function(e) {
   const { frames, fileName, fps } = e.data;
 
   ffmpeg({
-    arguments: ['-threads', '1', '-y', '-nostdin', '-r', `${fps}`, '-i', `export_%04d.jpg`,
-     '-c:v', 'libx264', '-vf', 'scale=614:-2', '-pix_fmt', 'yuv420p', '-preset', 'ultrafast', fileName],
+    arguments: [
+      '-threads', '1', 
+      '-y', 
+      '-nostdin', 
+      '-framerate', `${fps}`,
+      // '-r', `${fps}`, 
+      '-i', `export_%04d.jpg`,
+      '-c:v', 'libx264', 
+      // '-s:v', '640x360',
+      // '-vf', 'scale=640:360',
+      '-pix_fmt', 'yuv420p', 
+      '-preset', 'ultrafast',
+      // 'profile:v', 'main',
+      '-crf', '1',
+      // '-r', `${sfps}`,
+      fileName
+    ],
     preRun(module, fs) {
       for (let i = 0; i < frames.length; i++) {
         fs.writeFile(`export_${i.toString().padStart(4, '0')}.jpg`, new Uint8Array(frames[i]));

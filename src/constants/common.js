@@ -35,5 +35,8 @@ export const OverlayType = Object.freeze({
 export const DRAG_STATUS = Object.freeze({
   UNKNOWN: -1,
   DRAGGING: 0,
-  DRAG_OVER: 1
+  DRAG_OVER: 1,
+  TRANSITION_UNKNOWN: 2,
+  TRANSITION_DRAGGING: 3,
+  TRANSITION_DRAG_OVER: 4
 });

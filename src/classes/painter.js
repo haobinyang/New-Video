@@ -9,7 +9,8 @@ export default class Painter {
       preserveDrawingBuffer: true,
       antialias: true
     });
-    this.renderer.setPixelRatio(window.devicePixelRatio || 1);
+    // this.renderer.setPixelRatio(window.devicePixelRatio || 1);
+    this.renderer.setPixelRatio(2);
     this.renderer.setSize(width, height);
     this.maxAnisotropy = this.renderer.capabilities.getMaxAnisotropy();
   }

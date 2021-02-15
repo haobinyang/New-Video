@@ -59,6 +59,7 @@ export default class Player {
   }
 
   updateDuration() {
+    this.duration = 0;
     this.elements.forEach(({ endTime }) => {
       if (endTime > this.duration) {
         this.duration = endTime;
@@ -82,9 +83,21 @@ export default class Player {
   }
 
   removeElement(id) {
+    debugger
     const element = this.getElementById(id);
     element.removeFromPainter();
     this.elements.splice(this.elements.indexOf(element), 1);
+    // 删除关联的转场
+    if ([ElementType.VIDEO, ElementType.IMAGE].includes(element.type)) {
+      for (let i = 0; i < this.elements.length; i++) {
+        if (
+          this.elements[i].type === ElementType.TRANSITION &&
+          [this.elements[i].fromId, this.elements[i].toId].includes(element.id)
+        ) {
+          this.elements.splice(i, 1);
+        }
+      }
+    }
     this.updateDuration();
     this.pause();
   }
@@ -134,10 +147,10 @@ export default class Player {
   }
 
   // 点击进度条调用此方法
-  setCurrentTime(currentTime) {
+  async setCurrentTime(currentTime) {
     this.pause();
     this.currentTime = currentTime;
-    this.renderFrame(true);
+    await this.renderFrame(true);
   }
 
   // 渲染对应currentTime的帧

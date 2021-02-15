@@ -3,11 +3,11 @@
  * @param {*} file 
  * @param {*} arrayBuffer 
  */
-const mediaInfoWorker = new Worker('./workers/media_info.js');
-export function getMediaInfo(file) {
+export function getMediaInfo(file, arrayBuffer) {
   return new Promise((resolve) => {
-    mediaInfoWorker.postMessage({ file });
-    mediaInfoWorker.onmessage = function(e) {
+    const worker = new Worker('./workers/media_info.js');
+    worker.postMessage({ file, arrayBuffer });
+    worker.onmessage = function(e) {
       resolve({...e.data, size: file.size});
     }
   });
@@ -34,12 +34,7 @@ export function extractAudioInMP3(file, arrayBuffer) {
 export function extractVideoInMP4(file, arrayBuffer) {
   return new Promise((resolve) => {
     const worker = new Worker('./workers/extract_video.js');
-
-    worker.postMessage({
-      arguments: ['-threads', '1', '-y', '-nostdin', '-i', file.name, '-c:v', 'h264', '-preset', 'ultrafast', '-an', 'video.mp4'],
-      MEMFS: [{name: file.name, data: arrayBuffer}]
-    });
-
+    worker.postMessage({ file, arrayBuffer });
     worker.onmessage = function(e) {
       resolve(e.data);
     }
@@ -101,8 +96,8 @@ function drawImageToCanvas(canvas, ctx, image) {
 async function getImageData(canvas) {
   return new Promise((resolve) => {
     canvas.toBlob(async (blob) => {
-      // const arrayBuffer = await blob.arrayBuffer();
-      resolve(blob);
+      const arrayBuffer = await blob.arrayBuffer();
+      resolve(arrayBuffer);
     }, 'image/jpeg', 1.0);
   });
 }
@@ -115,32 +110,28 @@ export async function exportAsVideo(player, fileName = 'export.mp4', fps = 30) {
   const interval = 1000 / fps;
   let frames = [];
   let currentTime = 0;
-  const canvas = document.getElementById('canvas');
-  const ctx = canvas.getContext('2d');
-  // ctx.mozImageSmoothingEnabled = false;
-  // ctx.imageSmoothingEnabled = false;
-  // ctx.scale(0.5, 0.5);
   while (currentTime < player.duration) {
-    player.setCurrentTime(currentTime);
-    // const imageData1 = await getImageData(player.painter.getDomElement());
-    const imageData = await drawImageToCanvas(canvas, ctx, player.painter.getDomElement());
+    await player.setCurrentTime(currentTime);
+    const imageData = await getImageData(player.painter.getDomElement());
     frames.push(imageData);
     await sleep(interval);
     currentTime += interval;
   }
-  // player.setCurrentTime(player.duration);
-  // const imageData = await getImageData(player.painter.getDomElement());
-  // frames.push(imageData);
-
-  // 调用ffmpeg生成视频文件
-  // const worker = new Worker('./workers/export_video.js');
-  // worker.postMessage({ frames, fileName, fps });
-  // worker.onmessage = function(e) {
-  //   // 清空数据
-  //   frames.length = 0;
-  //   frames = [];
-  //   downloadFile(URL.createObjectURL(e.data), fileName);
-  // }
+  player.setCurrentTime(player.duration);
+  const imageData = await getImageData(player.painter.getDomElement());
+  frames.push(imageData);
+  return new Promise((resolve) => {
+    // 调用ffmpeg生成视频文件
+    const worker = new Worker('./workers/export_video.js');
+    worker.postMessage({ frames, fileName, fps });
+    worker.onmessage = function(e) {
+      // 清空数据
+      frames.length = 0;
+      frames = [];
+      downloadFile(URL.createObjectURL(e.data), fileName);
+      resolve(true);
+    }
+  });
 }
 
 /* Helper function */

@@ -42,6 +42,27 @@ export default {
 body {
   overscroll-behavior-x: none;
 }
+* {
+  user-select: none;
+  -webkit-user-select: none;
+}
+::-webkit-scrollbar {
+  height: 10px;
+  width: 10px;
+}
+::-webkit-scrollbar-corner {
+  background-color: rgb(23, 23, 30);
+}
+::-webkit-scrollbar-thumb {
+  background-color: rgb(60, 60, 72);
+  box-shadow: none;
+  border-radius: 95px;
+}
+::-webkit-scrollbar-track {
+  background-color: rgb(28, 28, 38);
+  box-shadow: none;
+  content: "";
+}
 </style>
 
 <style scoped>

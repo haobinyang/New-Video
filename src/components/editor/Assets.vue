@@ -1,7 +1,11 @@
 <template>
   <div class="container">
     <template v-if="currentTab === 'add'">
-      <file-upload accept="video/*, image/png, image/jpeg, image/jpg" @input-file="inputFile"></file-upload>
+      <file-upload accept="video/*, image/png, image/jpeg, image/jpg" @input-file="inputFile">
+        <div v-if="isTranscode" class="transcode-tip">
+          转码中，请稍后...
+        </div>
+      </file-upload>
     </template>
     <template v-else>
       <div v-for="item in assets[currentTab]"
@@ -9,7 +13,7 @@
         class="card"
       >
         <div class="frame">
-          <div class="element" @mousedown="mouseDown" @mouseup="mouseUp($event, item)">
+          <div class="element" @mousedown="mouseDown($event, item)" @mouseup="mouseUp($event, item)">
             {{item.name}}
           </div>
         </div>
@@ -23,6 +27,7 @@
 import { EventBus } from '../../utils/event-bus';
 import VueUploadComponent from 'vue-upload-component';
 import { ElementType, TransitionType, OverlayType } from '../../constants/common';
+import { getMediaInfo, extractVideoInMP4 } from '../../utils/media';
 
 export default {
   components: { FileUpload: VueUploadComponent },
@@ -34,13 +39,15 @@ export default {
       shiftY: 0,
       selectedAsset: null,
 
+      isTranscode: false,
+
       // 资源展示相关
       assets: {
         media: [],
         transitions: [
-          { name: 'Morph', value: TransitionType.MORPH, type: ElementType.TRANSITION, duration: 2500 },
-          { name: 'Dreamy', value: TransitionType.DREAMY, type: ElementType.TRANSITION, duration: 2500 },
-          { name: 'Fade', value: TransitionType.FADE, type: ElementType.TRANSITION, duration: 2500 }
+          { name: 'Morph', value: TransitionType.MORPH, type: ElementType.TRANSITION, duration: 2000 },
+          { name: 'Dreamy', value: TransitionType.DREAMY, type: ElementType.TRANSITION, duration: 2000 },
+          { name: 'Fade', value: TransitionType.FADE, type: ElementType.TRANSITION, duration: 2000 }
         ],
         overlays: [
           { name: 'Plunging', value: OverlayType.PLUNGING, type: ElementType.SVG, duration: 2000 }
@@ -61,6 +68,12 @@ export default {
         let value;
         if (type === ElementType.VIDEO) {
           value = await file.file.arrayBuffer();
+          const mediaInfo = await getMediaInfo(file, value);
+          if (mediaInfo?.video?.compression !== 'h264') { // 视频需要转换为h264
+            this.isTranscode = true;
+            value = await extractVideoInMP4(file, value);
+            this.isTranscode = false;
+          }
         } else {
           value = file.file;
         }
@@ -73,7 +86,7 @@ export default {
         EventBus.$emit('changeTab2Media', 'media');
       }
     },
-    mouseDown(e) {
+    mouseDown(e, element) {
       const { target, pageX, pageY, clientX, clientY } = e;
       this.element = target;
       this.shiftX = clientX - this.element.getBoundingClientRect().left;
@@ -81,6 +94,7 @@ export default {
       this.element.style.position = 'absolute';
       this.element.style.zIndex = 1000;
       this.moveAt(pageX, pageY);
+      this.selectedAsset = element;
       document.addEventListener('mousemove', this.mouseMove);
     },
     moveAt(pageX, pageY) {
@@ -95,29 +109,45 @@ export default {
       const elemBelow = document.elementFromPoint(clientX, clientY);
       this.element.hidden = false;
       if (elemBelow) {
-        if (elemBelow.closest('.drop-zone')) {
-          EventBus.$emit('dragOver', elemBelow);
+        if (this.selectedAsset.type === ElementType.TRANSITION) {
+          if (elemBelow.closest('.transition-drop-zone')) {
+            EventBus.$emit('transitionDragOver', elemBelow);
+          } else {
+            EventBus.$emit('transitionDragging', elemBelow);
+          }
         } else {
-          EventBus.$emit('dragging', elemBelow);
+          if (elemBelow.closest('.drop-zone')) {
+            EventBus.$emit('dragOver', elemBelow);
+          } else {
+            EventBus.$emit('dragging', elemBelow);
+          }
         }
       }
     },
     mouseUp(e, item) {
-      const { element, mouseMove, shiftX, shiftY } = this;
+      const { element, mouseMove } = this;
       const { clientX, clientY, offsetX, offsetY } = e;
       this.element.hidden = true;
       const elemBelow = document.elementFromPoint(clientX, clientY);
       this.element.hidden = false;
-      if (elemBelow && elemBelow.closest('.drop-zone')) {
-        EventBus.$emit('dragged', {
-          data: item,
-          position: {
-            x: offsetX,
-            y: offsetY
-          }
-        });
+      if (this.selectedAsset.type === ElementType.TRANSITION) {
+        if (elemBelow && elemBelow.closest('.transition-drop-zone')) {
+          EventBus.$emit('transitionDragged', {
+            data: item,
+            position: { x: offsetX, y: offsetY }
+          });
+        } else {
+          EventBus.$emit('transitionDragCancelled');
+        }
       } else {
-        EventBus.$emit('dragCancelled');
+        if (elemBelow && elemBelow.closest('.drop-zone')) {
+          EventBus.$emit('dragged', {
+            data: item,
+            position: { x: offsetX, y: offsetY }
+          });
+        } else {
+          EventBus.$emit('dragCancelled');
+        }
       }
       element.style.position = '';
       document.removeEventListener('mousemove', mouseMove);
@@ -136,6 +166,15 @@ export default {
   transform: translate(-50%, -50%);
   background: rgb(244, 244, 244);
   border-radius: 100%;
+  overflow: visible !important;
+}
+.transcode-tip {
+  position: absolute;
+  width: 200px;
+  color: white;
+  text-align: center;
+  top: 110px;
+  left: -50px;
 }
 .file-uploads::before {
   content: '';

@@ -72,20 +72,20 @@ export class Transition extends Element {
   onCurrentTimeChange() {
     if (this.player.isInRange(this)) { // 在有效的播放范围内
       this.addToPainter();
-      this.from.hide();
-      this.to.hide();
+      // this.from.hide();
+      // this.to.hide();
       this.render();
     } else {
       this.removeFromPainter();
-      this.from.show();
-      this.to.show();
+      // this.from.show();
+      // this.to.show();
     }
   }
 
   render() {
     const { startTime, endTime, player: { currentTime }, from } = this;
     const progress = (currentTime - startTime) / (endTime - startTime);
-    this.sprite.position.z = from.zIndex;
+    this.sprite.position.z = from.zIndex + 1;
     this.material.uniforms.progress.value = progress;
   }
  }

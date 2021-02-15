@@ -26,7 +26,7 @@ export async function assetToElementData(data) {
           effect: EffectType.NO_EFFECT,
           width: video.videoWidth,
           height: video.videoHeight,
-          fitType: FitType.CONTAIN
+          fitType: FitType.COVER
         };
       }
     case ElementType.IMAGE:
@@ -38,7 +38,7 @@ export async function assetToElementData(data) {
           width: image.naturalWidth,
           height: image.naturalHeight,
           effect: EffectType.NO_EFFECT,
-          fitType: FitType.CONTAIN,
+          fitType: FitType.COVER,
           name: name,
           duration: 2000
         };
@@ -58,6 +58,21 @@ export async function assetToElementData(data) {
         duration: duration
       };
   }
+}
+
+export function geneTransitionInfo(data, element1, element2) {
+  const halfDuration = data.duration / 2;
+  return {
+    type: ElementType.TRANSITION,
+    transition: data.value,
+    id: uniqId(),
+    fromId: element1.id,
+    toId: element2.id,
+    startTime: element1.endTime - halfDuration,
+    endTime: element1.endTime + halfDuration,
+    duration: data.duration,
+    name: data.name
+  };
 }
 
 export async function geneElementInfo(data, offsetInDragElement, offsetInDropZone) {

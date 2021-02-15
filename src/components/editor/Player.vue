@@ -29,8 +29,8 @@ export default {
   },
   mounted() {
     const playerConfig = {
-      width: 614,
-      height: 345,
+      width: 640,
+      height: 360,
       elements: [],
       onCurrentTimeChange: (currentTime) => {
         EventBus.$emit('setCurrentTimeToTimeLine', currentTime);
@@ -100,8 +100,8 @@ export default {
   align-items: center;
 }
 .player {
-  width: 614px;
-  height: 345px;
+  width: 640px;
+  height: 360px;
   position: relative;
   top: -20px;
 }

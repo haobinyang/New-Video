@@ -15,14 +15,23 @@
             :class="getClasses(index)"
             @mouseover="dropZoneMouseOver"
           >
-            <div v-for="subItem in item" 
-              :key="subItem.id" 
-              :class="['element', activeId === subItem.id ? 'active' : '']"
-              :style="getElementStyle(subItem)"
-              @click="elementClick(subItem.id)"
-            >
-              {{subItem.name}}
-            </div>
+            <template v-for="(subItem, index2) in item">
+              <div 
+                :key="subItem.id" 
+                :class="getElementClasses(subItem)"
+                :style="getElementStyle(subItem)"
+                @click="elementClick(subItem.id)"
+              >
+                {{subItem.name}}
+              </div>
+              <div v-if="isAdjacent(item, index2)"
+                :class="getTransitionClasses('transition_' + subItem.id)"
+                :key="'transition_' + subItem.id"
+                :data-id="'transition_' + subItem.id"
+                :style="getTransitionStyle(subItem)"
+              >
+              </div>
+            </template>
           </div>
         </div>
       </div>
@@ -32,8 +41,14 @@
 
 <script>
 import { EventBus } from '../../utils/event-bus';
-import { WidthPerSecond, DRAG_STATUS } from '../../constants/common';
-import { geneElementInfo, getDuration, solveTimeConfict, getInsertIndex } from '../../utils/common';
+import { WidthPerSecond, DRAG_STATUS, ElementType } from '../../constants/common';
+import { 
+  geneElementInfo, 
+  getDuration, 
+  solveTimeConfict, 
+  getInsertIndex,
+  geneTransitionInfo
+} from '../../utils/common';
 import Anchor from './Anchor';
 
 export default {
@@ -43,6 +58,8 @@ export default {
       list: [[]], // 实际存储的数据
       overIndex: -1,
       status: DRAG_STATUS.UNKNOWN,
+
+      transitionId: '',
 
       // 放置位置
       offsetX: 0,
@@ -76,6 +93,20 @@ export default {
       }
       return result;
     },
+    getTransitionClasses(transitionId) {
+      const { status } = this;
+      const result = ['transition-drop-zone'];
+      if (status === DRAG_STATUS.TRANSITION_DRAGGING) {
+        result.push('prepare');
+      } else if (status === DRAG_STATUS.TRANSITION_DRAG_OVER && 
+        transitionId === this.transitionId) {
+        result.push('hover');
+      }
+      return result;
+    },
+    getTransitionStyle(element) {
+      return { left: element.endTime / 1000 * WidthPerSecond + 'px' };
+    },
     findOverElementIndex(element) {
       const dropZones = Array.from(document.querySelectorAll('.drop-zone'));
       return dropZones.indexOf(element);
@@ -94,6 +125,25 @@ export default {
       this.activeId = element.id;
       EventBus.$emit('addElement', list, element);
     },
+    addTransition(data) {
+      const { list, transitionId } = this;
+      const element1Id = transitionId.replace('transition_', '');
+      let element1, element2;
+      for (let i = 0; i < list.length; i++) {
+        const items = list[i];
+        for (let j = 0; j < items.length; j++) {
+          if (items[j].id === element1Id) {
+            element1 = items[j];
+            element2 = items[j + 1];
+            const transition = geneTransitionInfo(data, element1, element2);
+            items.splice(j + 1, 0, transition);
+            EventBus.$emit('addElement', list, transition);
+            this.activeId = transition.id;
+            return;
+          }
+        }
+      }
+    },
     remove() {
       const { list } = this;
       for (let i = 0; i < list.length; i++) {
@@ -101,7 +151,13 @@ export default {
         for (let j = 0; j < elements.length; j++) {
           const element = elements[j];
           if (element.id === this.activeId) {
-            elements.splice(j, 1);
+            if (elements[j + 1]?.type === ElementType.TRANSITION) {
+              elements.splice(j, 2);
+            } else if (elements[j - 1]?.type === ElementType.TRANSITION) {
+              elements.splice(j - 1, 2);
+            } else {
+              elements.splice(j, 1);
+            }
             if (!elements.length && list.length !== 1) {
               list.splice(i, 2);
             }
@@ -113,6 +169,17 @@ export default {
       const { offsetX, offsetY } = e;
       this.offsetX = offsetX;
       this.offsetY = offsetY;
+    },
+    getElementClasses(element) {
+      const { activeId } = this;
+      const result = ['element'];
+      if (activeId === element.id) {
+        result.push('active');
+      }
+      if (element.type === ElementType.TRANSITION) {
+        result.push('transition');
+      }
+      return result;
     },
     getElementStyle(element) {
       const { startTime, endTime } = element;
@@ -131,6 +198,21 @@ export default {
     },
     elementClick(id) {
       this.activeId = id;
+    },
+    isAdjacent(elements, index) {
+      const element1 = elements[index];
+      const element2 = elements[index + 1];
+      if (
+        element1 && 
+        element2 &&
+        [ElementType.VIDEO, ElementType.IMAGE].includes(element1.type) &&
+        [ElementType.VIDEO, ElementType.IMAGE].includes(element2.type)
+      ) {
+        if (Math.abs(element1.endTime - element2.startTime) <= 10e-6) {
+          return true;
+        }
+      }
+      return false;
     }
   },
   mounted() {
@@ -153,6 +235,25 @@ export default {
         this.overIndex = -1;
       }, 0);
     });
+
+    // transition 
+    EventBus.$on('transitionDragging', () => {
+      this.status = DRAG_STATUS.TRANSITION_DRAGGING;
+    });
+    EventBus.$on('transitionDragOver', (element) => {
+      this.status = DRAG_STATUS.TRANSITION_DRAG_OVER;
+      this.transitionId = element.getAttribute('data-id');
+    });
+    EventBus.$on('transitionDragCancelled', () => {
+      this.status = DRAG_STATUS.UNKNOWN;
+    });
+    EventBus.$on('transitionDragged', ({ data, position }) => {
+      window.setTimeout(() => {
+        this.addTransition(data);
+        this.status = DRAG_STATUS.UNKNOWN;
+      }, 0);
+    });
+
     EventBus.$on('setCurrentTimeToTimeLine', (currentTime) => {
       this.currentTime = currentTime;
     });
@@ -259,8 +360,6 @@ export default {
   color: white;
   overflow: hidden;
   transition: width 0.3s, background-color 0.3s, box-shadow 0.3s;
-  user-select: none;
-  -webkit-user-select: none;
   cursor: default;
   width: 10px;
   text-overflow: ellipsis;
@@ -272,5 +371,31 @@ export default {
 .drop-zone .element.active {
   box-shadow: rgb(69 211 174) 0px 0px 0px 2px inset;
   cursor: move;
+}
+.drop-zone .element.transition {
+  background: rgba(47, 166, 143, 1);
+  opacity: 0.5;
+  z-index: 3;
+}
+
+.transition-drop-zone {
+  position: absolute;
+  top: 0;
+  height: 30px;
+  transition: all 0.3s;
+  box-sizing: border-box;
+  z-index: 5;
+  transform-origin: center center;
+  width: 100px;
+  transform: translateX(-50%);
+  opacity: 0;
+  background: rgba(47, 166, 143, 1);
+  box-sizing: border-box;
+}
+.transition-drop-zone.prepare {
+  opacity: 0.5;
+}
+.transition-drop-zone.hover {
+  opacity: 1;
 }
 </style>

@@ -1,17 +1,16 @@
-self.importScripts('../libs/ffmpeg.js')
+importScripts('../libs/ffmpeg.js')
 
 onmessage = function(e) {
-  const { MEMFS, arguments } = e.data;
-  ffmpeg_run({
-    MEMFS: MEMFS,
-    arguments: arguments,
-    onFileCreated: function(stream) {
+  const { file, arrayBuffer } = e.data;
+  ffmpeg({
+    arguments: ['-threads', '1', '-y', '-nostdin', '-i', file.name, '-c:v', 'h264', '-preset', 'ultrafast', '-an', 'video.mp4'],
+    preRun(module, fs) {
+      fs.writeFile(file.name, new Uint8Array(arrayBuffer));
+    },
+    onFilesChanged(stream) {
       if (stream.path.includes('video.mp4')) {
-        const blob = new Blob([stream.node.contents], { type: 'video/mp4' });
-        postMessage(blob);
+        postMessage(stream.node.contents);
       }
     }
-  }, () => {
-    postMessage(null);
   });
 }
