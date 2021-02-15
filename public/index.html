@@ -35,14 +35,12 @@
     </div>
     <!-- built files will be auto injected -->
     <script src="libs/three.js"></script>
-    <script src="libs/ffmpeg.js"></script>
     <script>
-      ffmpeg({
-        arguments: ['-codecs'],
-        onExit() {
-          document.querySelector('.loading').style.display = 'none';
-        }
-      });
+      const worker = new Worker('workers/list_codecs.js');
+      worker.postMessage({});
+      worker.onmessage = function(e) {
+        document.querySelector('.loading').style.display = 'none';
+      };
     </script>
   </body>
 </html>
