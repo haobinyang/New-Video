@@ -10,6 +10,7 @@
         <div class="icon" v-html="item.icon"></div>
         <span>{{item.label}}</span>
       </div>
+      <a class="tutorial" href="tutorial/tutorial.mov">教程</a>
     </div>
   </div>
 </template>
@@ -110,5 +111,12 @@ export default {
 }
 .menu-item:hover span, .menu-item.active span {
   color: white;
+}
+.tutorial {
+  color: white;
+  text-decoration: none;
+  font-size: 14px;
+  margin-top: 50px;
+  display: block;
 }
 </style>
