@@ -41,3 +41,19 @@ export async function loadSvg(path) {
   const svg = await fetch(path);
   return svg.text();
 }
+
+export async function loadLottie(path) {
+  const lottieRes = await fetch(path);
+  const lottieJson = await lottieRes.json();
+  const container = document.createElement('div');
+  container.style.width = '1280px'; // `${lottieJson.w}px`;
+  container.style.height = '720px'; // `${lottieJson.h}px`;
+  document.body.appendChild(container);
+  // eslint-disable-next-line no-undef
+  return lottie.loadAnimation({
+    container,
+    renderer: 'canvas',
+    autoplay: false,
+    animationData: lottieJson
+  });
+}

@@ -16,15 +16,10 @@ export function getMediaInfo(file, arrayBuffer) {
 export function extractAudioInMP3(file, arrayBuffer) {
   return new Promise((resolve) => {
     const worker = new Worker('./workers/extract_audio.js');
-
-    worker.postMessage({
-      arguments: ['-i', file.name, '-f', 'mp3', '-vn', 'audio.mp3'],
-      MEMFS: [{name: file.name, data: arrayBuffer}]
-    });
-
+    worker.postMessage({ file, arrayBuffer });
     worker.onmessage = function(e) {
       resolve(e.data);
-    }
+    };
   });
 }
 
@@ -37,7 +32,7 @@ export function extractVideoInMP4(file, arrayBuffer) {
     worker.postMessage({ file, arrayBuffer });
     worker.onmessage = function(e) {
       resolve(e.data);
-    }
+    };
   });
 }
 
@@ -50,7 +45,6 @@ export function listCodecs() {
     });
 
     worker.onmessage = function(e) {
-      debugger
       resolve(e.data);
     }
   });

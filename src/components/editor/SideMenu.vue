@@ -26,7 +26,8 @@ const MENU = [
   { label: '添加', value: 'add', icon: addIcon },
   { label: '媒体', value: 'media', icon: mediaIcon },
   { label: '转场', value: 'transitions', icon: transitionIcon },
-  { label: '覆盖', value: 'overlays', icon: overlayIcon }
+  { label: '覆盖', value: 'overlays', icon: overlayIcon },
+  { label: 'Lottie', value: 'lottie', icon: mediaIcon },
 ];
 export default {
   data() {

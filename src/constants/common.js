@@ -7,7 +7,8 @@ export const ElementType = Object.freeze({
   IMAGE: 'Image',
   TEXT: 'Text',
   SVG: 'Svg',
-  TRANSITION: 'Transition'
+  TRANSITION: 'Transition',
+  LOTTIE: 'Lottie'
 });
 
 export const FitType = Object.freeze({

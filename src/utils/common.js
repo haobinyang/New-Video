@@ -57,6 +57,13 @@ export async function assetToElementData(data) {
         name: name,
         duration: duration
       };
+    case ElementType.LOTTIE:
+      return {
+        type: type,
+        name: name,
+        lottie: value,
+        duration: duration,
+      };
   }
 }
 

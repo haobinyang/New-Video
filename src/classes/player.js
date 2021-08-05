@@ -6,6 +6,7 @@ import { Audio } from './audio.js';
 import { Transition } from './transition.js';
 import { Svg } from './svg.js';
 import Painter from './painter.js';
+import { Lottie } from './lottie.js';
 
 function createElement(config, player) {
   switch (config.type) {
@@ -21,6 +22,8 @@ function createElement(config, player) {
       return new Audio(config, player);
     case ElementType.SVG:
       return new Svg(config, player);
+    case ElementType.LOTTIE:
+      return new Lottie(config, player);
   }
 }
 

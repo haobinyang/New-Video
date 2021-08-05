@@ -28,6 +28,7 @@ import { EventBus } from '../../utils/event-bus';
 import VueUploadComponent from 'vue-upload-component';
 import { ElementType, TransitionType, OverlayType } from '../../constants/common';
 import { getMediaInfo, extractVideoInMP4 } from '../../utils/media';
+import { loadLottie } from '../../utils/tool';
 
 export default {
   components: { FileUpload: VueUploadComponent },
@@ -51,6 +52,10 @@ export default {
         ],
         overlays: [
           { name: 'Plunging', value: OverlayType.PLUNGING, type: ElementType.SVG, duration: 2000 }
+        ],
+        lottie: [
+          { name: 'markus', value: './lotties/markus.json', type: ElementType.LOTTIE },
+          { name: 'word', value: './lotties/word.json', type: ElementType.LOTTIE }
         ]
       },
       currentTab: 'add'
@@ -124,7 +129,7 @@ export default {
         }
       }
     },
-    mouseUp(e, item) {
+    async mouseUp(e, item) {
       const { element, mouseMove } = this;
       const { clientX, clientY, offsetX, offsetY } = e;
       this.element.hidden = true;
@@ -141,6 +146,11 @@ export default {
         }
       } else {
         if (elemBelow && elemBelow.closest('.drop-zone')) {
+          if (this.selectedAsset.type === ElementType.LOTTIE) {
+            const lottieInstance = await loadLottie(item.value);
+            item.value = lottieInstance;
+            item.duration = lottieInstance.totalFrames / lottieInstance.frameRate * 1000;
+          }
           EventBus.$emit('dragged', {
             data: item,
             position: { x: offsetX, y: offsetY }
