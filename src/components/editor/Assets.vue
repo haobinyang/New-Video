@@ -55,7 +55,8 @@ export default {
         ],
         lottie: [
           { name: 'markus', value: './lotties/markus.json', type: ElementType.LOTTIE },
-          { name: 'word', value: './lotties/word.json', type: ElementType.LOTTIE }
+          { name: 'word', value: './lotties/word.json', type: ElementType.LOTTIE },
+          { name: 'lottieLogo', value: './lotties/lottie-logo.json', type: ElementType.LOTTIE }
         ]
       },
       currentTab: 'add'

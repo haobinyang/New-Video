@@ -156,8 +156,9 @@ export function getDuration(elements) {
 }
 
 export function msToTime(ms) {
-  const leftMs = ms % 1000;
-  const s = Math.floor(ms / 1000);
+  const msInInt = Math.round(ms);
+  const leftMs = msInInt % 1000;
+  const s = Math.floor(msInInt / 1000);
   const leftS = s % 60;
   const m = Math.floor(s / 60);
   const leftM = m % 60;
